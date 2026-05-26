@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>GERI VISUALS | Blog & Story</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-dark: #05070a;
+            --bg-card: #0b0e14;
+            --text-primary: #f1f3f6;
+            --text-secondary: #8e98a8;
+            --accent-blue: #3b82f6;
+            --border-line: rgba(59, 130, 246, 0.12);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #07090d; }
+        ::-webkit-scrollbar-thumb { background: var(--accent-blue); border-radius: 8px; }
+
+        /* Navigation */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 6%;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1100;
+            background: rgba(5, 7, 10, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-line);
+        }
+
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            background: linear-gradient(135deg, #ffffff, #60a5fa, #2563eb);
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+        }
+
+        .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+        .nav-links a:hover { color: #ffffff; }
+
+        /* Language Switcher */
+        .lang-switch {
+            display: flex;
+            gap: 10px;
+            background: rgba(255,255,255,0.03);
+            padding: 5px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .lang-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            opacity: 0.4;
+            transition: all 0.3s ease;
+            filter: grayscale(100%);
+        }
+        .lang-btn.active, .lang-btn:hover {
+            opacity: 1;
+            filter: grayscale(0%);
+            transform: scale(1.1);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 50vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 8rem 6% 2rem;
+            background: radial-gradient(circle at 50% 40%, rgba(59, 130, 246, 0.06), transparent 55%);
+            border-bottom: 1px solid var(--border-line);
+        }
+        .hero h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-family: 'Playfair Display', serif;
+            font-weight: 500;
+            background: linear-gradient(140deg, #ffffff 30%, #a3c7ff 70%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .hero p { 
+            margin-top: 1rem; 
+            color: var(--text-secondary); 
+            max-width: 600px; 
+            font-weight: 300;
+        }
+
+        /* Blog Grid */
+        .blog-section { padding: 5rem 6%; max-width: 1200px; margin: 0 auto; }
+        .blog-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 3rem;
+        }
+        .blog-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            padding: 2.5rem;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+        .blog-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+        .blog-date { color: #60a5fa; font-size: 0.85rem; letter-spacing: 0.05em; margin-bottom: 1rem; display: block;}
+        .blog-card h2 { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 1rem; font-weight: 500;}
+        .blog-card p { color: var(--text-secondary); font-size: 0.95rem; font-weight: 300; margin-bottom: 1.5rem; }
+        .read-more { color: #ffffff; text-decoration: none; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; border-bottom: 1px solid #60a5fa; padding-bottom: 2px;}
+
+        footer { text-align: center; padding: 2.5rem; color: var(--text-secondary); font-size: 0.8rem; border-top: 1px solid rgba(255,255,255,0.03); margin-top: 3rem;}
+        footer a { color: #60a5fa; text-decoration: none;}
+
+        @media (max-width: 768px) { 
+            .navbar { flex-direction: column; gap: 10px; padding: 0.95rem 4%; } 
+            .nav-right { flex-direction: column-reverse; gap: 10px; width: 100%; align-items: center; }
+            .nav-links { gap: 0.9rem; flex-wrap: wrap; justify-content: center; }
+            .nav-links a { font-size: 0.75rem; }
+            .hero { min-height: 42vh; padding: 7.5rem 4% 1.5rem; }
+            .hero h1 { max-width: 18ch; }
+            .hero p { font-size: 0.95rem; max-width: 32ch; }
+            .blog-section { padding: 3.2rem 4%; }
+            .blog-grid { gap: 1.2rem; }
+            .blog-card { padding: 1.4rem; border-radius: 14px; }
+            .blog-card h2 { font-size: 1.45rem; }
+            .blog-card p { font-size: 0.92rem; }
+            .story-modal { padding: 0.85rem; }
+            .story-modal-panel { max-height: 94vh; padding: 1.2rem; border-radius: 16px; }
+            .story-modal-close { top: 10px; right: 10px; width: 38px; height: 38px; }
+            footer { padding: 1.8rem 1rem; font-size: 0.75rem; }
+        }
+
+        @media (max-width: 480px) {
+            .navbar { padding: 0.9rem 3.5%; }
+            .nav-links { gap: 0.65rem; }
+            .nav-links a { font-size: 0.7rem; }
+            .hero { min-height: 38vh; padding-top: 7rem; }
+            .hero h1 { font-size: 2.2rem; }
+            .hero p { font-size: 0.9rem; }
+            .blog-card { padding: 1.2rem; }
+            .blog-card h2 { font-size: 1.3rem; }
+        }
+    
+        /* Blog Story Modal */
+        .story-modal {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.72);
+            backdrop-filter: blur(12px);
+            z-index: 3000;
+        }
+        .story-modal.open { display: flex; }
+        .story-modal-panel {
+            position: relative;
+            width: min(860px, 100%);
+            max-height: min(84vh, 900px);
+            overflow: auto;
+            background: linear-gradient(180deg, #0d1118, #080b10);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            border-radius: 20px;
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.6);
+            padding: 2rem;
+        }
+        .story-modal-close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.03);
+            color: #ffffff;
+            border-radius: 999px;
+            font-size: 1.4rem;
+            line-height: 1;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+        .story-modal-close:hover { transform: scale(1.06); background: rgba(96,165,250,0.14); }
+        .story-modal-kicker {
+            color: #60a5fa;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.75rem;
+        }
+        .story-modal h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.7rem, 4vw, 2.6rem);
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+        .story-modal-meta {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+        .story-modal-body {
+            color: var(--text-primary);
+            font-size: 1rem;
+            line-height: 1.8;
+        }
+        .story-modal-body p + p { margin-top: 1rem; }
+
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <img src="./pfp.png" alt="Geri" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(59, 130, 246, 0.6); box-shadow: 0 0 12px rgba(59, 130, 246, 0.25);">
+        <div class="logo">GERI VISUALS</div>
+    </div>
+    <div class="nav-right">
+        <ul class="nav-links">
+            <li><a href="index.html" data-scroll="gallery-main" data-i18n="nav-portfolio">Portfolio</a></li>
+            <li><a href="index.html" data-scroll="about" data-i18n="nav-story">Story</a></li>
+            <li><a href="blog.html" data-i18n="nav-blog" style="color: #ffffff;">Blog</a></li>
+            <li><a href="index.html" data-scroll="contact-full" data-i18n="nav-contact">Contact</a></li>
+        </ul>
+        <div class="lang-switch">
+            <button id="lang-sk" class="lang-btn" title="Slovensky">
+                <img src="./sk.png" alt="Slovensky" style="width: 20px; height: auto; display: block;">
+            </button>
+            <button id="lang-en" class="lang-btn active" title="English">
+                <img src="./en.png" alt="English" style="width: 20px; height: auto; display: block;">
+            </button>
+        </div>
+    </div>
+</nav>
+
+<header class="hero">
+    <h1 data-i18n="hero-title">Thoughts & Visions</h1>
+    <p data-i18n="hero-subtitle">Behind the scenes of automotive elegance and raw portraiture.</p>
+</header>
+
+<section class="blog-section">
+    <div class="blog-grid">
+            <!-- Blog posts will be dynamically loaded here from Supabase -->
+    </div>
+</section>
+
+
+<div class="story-modal" id="storyModal" aria-hidden="true">
+    <div class="story-modal-panel" role="dialog" aria-modal="true" aria-labelledby="storyModalTitle">
+        <button class="story-modal-close" id="storyModalClose" aria-label="Close story">×</button>
+        <div class="story-modal-kicker" id="storyModalKicker">Full Story</div>
+        <h3 id="storyModalTitle"></h3>
+        <div class="story-modal-meta" id="storyModalMeta"></div>
+        <div class="story-modal-body" id="storyModalBody"></div>
+    </div>
+</div>
+
+<footer>
+    <p><span data-i18n="footer-text">© 2026 GERI PHOTOGRAPHY — Structural Artistry Production.</span> | <a href="https://instagram.com/nebula.visuals" target="_blank">Instagram Channel</a></p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="blog.js"></script>
+</body>
+</html>

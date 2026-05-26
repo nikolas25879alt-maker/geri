@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GERI-SZ VISUALS | Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<style> 
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #05070a;
+            --surface: #0b0e14;
+            --surface2: #111520;
+            --border: rgba(59,130,246,0.12);
+            --blue: #3b82f6;
+            --blue-dim: rgba(59,130,246,0.15);
+            --text: #f1f3f6;
+            --muted: #8e98a8;
+            --danger: #ef4444;
+            --success: #22c55e;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #07090d; }
+        ::-webkit-scrollbar-thumb { background: var(--blue); border-radius: 8px; }
+
+        /* ── LOGIN SCREEN ─────────────────────────────────── */
+        #loginScreen {
+            position: fixed; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            background: radial-gradient(circle at 50% 35%, rgba(59,130,246,0.07), transparent 55%), var(--bg);
+            z-index: 9999;
+        }
+        .login-box {
+            width: min(420px, 92vw);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+        }
+        .login-logo {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            background: linear-gradient(135deg,#fff,#60a5fa,#2563eb);
+            -webkit-background-clip: text; color: transparent;
+            margin-bottom: 0.4rem;
+        }
+        .login-box h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.7rem; font-weight: 400;
+            margin-bottom: 0.6rem;
+        }
+        .login-box p { color: var(--muted); font-size: 0.88rem; margin-bottom: 2rem; }
+        .field { margin-bottom: 1.1rem; }
+        .field label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.45rem; letter-spacing: 0.04em; }
+        .field input {
+            width: 100%; padding: 0.85rem 1rem;
+            background: rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px; color: #fff;
+            font-family: 'Inter', sans-serif; font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+        .field input:focus { outline: none; border-color: var(--blue); }
+        .btn-primary {
+            width: 100%; padding: 0.9rem;
+            background: var(--blue); color: #fff;
+            border: none; border-radius: 8px;
+            font-weight: 600; font-size: 0.95rem;
+            cursor: pointer; transition: opacity 0.2s, transform 0.15s;
+        }
+        .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+        .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+        #loginError {
+            margin-top: 1rem; padding: 0.75rem 1rem;
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.25);
+            border-radius: 8px; color: #fca5a5;
+            font-size: 0.85rem; display: none;
+        }
+        .cooldown-bar {
+            margin-top: 1rem; height: 3px;
+            background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden;
+            display: none;
+        }
+        .cooldown-fill {
+            height: 100%; background: var(--danger);
+            transition: width 1s linear; width: 100%;
+        }
+
+        /* ── ADMIN SHELL ──────────────────────────────────── */
+        #adminShell { display: none; min-height: 100vh; }
+
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1.1rem 2rem;
+            background: rgba(5,7,10,0.92); backdrop-filter: blur(30px);
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .topbar-logo { font-size: 1rem; font-weight: 700; letter-spacing: 0.15em;
+            background: linear-gradient(135deg,#fff,#60a5fa); -webkit-background-clip: text; color: transparent; }
+        .topbar-right { display: flex; align-items: center; gap: 1rem; }
+        .badge-admin {
+            padding: 0.3rem 0.75rem; background: var(--blue-dim);
+            border: 1px solid rgba(59,130,246,0.3); border-radius: 999px;
+            font-size: 0.75rem; color: #93c5fd;
+        }
+        .btn-logout {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.25);
+            color: #fca5a5; padding: 0.4rem 0.9rem;
+            border-radius: 8px; font-size: 0.8rem; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-logout:hover { background: rgba(239,68,68,0.2); }
+
+        /* Tabs */
+        .tabs {
+            display: flex; gap: 0.5rem; padding: 1.5rem 2rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .tab-btn {
+            padding: 0.65rem 1.4rem; background: transparent;
+            border: 1px solid transparent; border-radius: 8px 8px 0 0;
+            color: var(--muted); font-size: 0.9rem; font-weight: 500;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .tab-btn.active { color: #fff; border-color: var(--border); background: var(--surface); border-bottom-color: var(--surface); margin-bottom: -1px; }
+        .tab-btn:hover:not(.active) { color: var(--text); }
+
+        /* Tab content */
+        .tab-panel { display: none; padding: 2rem; }
+        .tab-panel.active { display: block; }
+
+        /* ── PHOTOS TAB ───────────────────────────────────── */
+        .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+        .panel-header h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 500; }
+        .btn-action {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 0.65rem 1.3rem; background: var(--blue);
+            color: #fff; border: none; border-radius: 8px;
+            font-size: 0.88rem; font-weight: 600; cursor: pointer;
+            transition: opacity 0.2s, transform 0.15s;
+        }
+        .btn-action:hover { opacity: 0.88; transform: translateY(-1px); }
+
+        /* Upload Drop Zone */
+        .upload-zone {
+            border: 2px dashed rgba(59,130,246,0.25);
+            border-radius: 14px; padding: 2.5rem;
+            text-align: center; cursor: pointer;
+            transition: all 0.2s; margin-bottom: 1.5rem;
+            background: rgba(59,130,246,0.03);
+        }
+        .upload-zone:hover, .upload-zone.drag-over {
+            border-color: var(--blue); background: var(--blue-dim);
+        }
+        .upload-zone i { font-size: 2rem; color: var(--blue); margin-bottom: 0.75rem; display: block; }
+        .upload-zone p { color: var(--muted); font-size: 0.9rem; }
+        .upload-zone strong { color: var(--text); }
+        #fileInput { display: none; }
+
+        /* Upload metadata form */
+        .upload-meta { display: none; }
+        .upload-meta.visible { display: block; }
+        .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+        .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+        .form-group label { font-size: 0.8rem; color: var(--muted); letter-spacing: 0.04em; }
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 0.75rem 0.9rem;
+            background: rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px; color: #fff;
+            font-family: 'Inter', sans-serif; font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--blue); }
+        .form-group select option { background: #111520; }
+        .form-group textarea { resize: vertical; min-height: 70px; }
+
+        /* Preview strip */
+        #previewStrip { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; }
+        .preview-thumb {
+            position: relative; width: 90px; height: 70px;
+            border-radius: 8px; overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .preview-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .preview-thumb .rm-btn {
+            position: absolute; top: 3px; right: 3px;
+            width: 20px; height: 20px; background: rgba(0,0,0,0.75);
+            border: none; border-radius: 50%; color: #fff;
+            font-size: 0.7rem; cursor: pointer; display: grid; place-items: center;
+        }
+
+        /* Progress bar */
+        .upload-progress { display: none; margin-bottom: 1rem; }
+        .upload-progress p { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.4rem; }
+        .progress-bar { height: 4px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--blue); transition: width 0.3s; width: 0%; }
+
+        /* Photos grid (existing) */
+        #photosGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem; margin-top: 2rem;
+        }
+        .admin-photo-card {
+            background: var(--surface);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 12px; overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        .admin-photo-card:hover { border-color: rgba(59,130,246,0.3); }
+        .admin-photo-card img { width: 100%; height: 140px; object-fit: cover; display: block; }
+        .admin-photo-info { padding: 0.75rem; }
+        .admin-photo-info strong { display: block; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .admin-photo-info span { font-size: 0.75rem; color: var(--muted); }
+        .card-actions { display: flex; gap: 0.5rem; padding: 0.5rem 0.75rem 0.75rem; }
+        .btn-danger {
+            flex: 1; padding: 0.45rem; background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.2); color: #fca5a5;
+            border-radius: 6px; font-size: 0.78rem; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-danger:hover { background: rgba(239,68,68,0.2); }
+        .photos-empty { padding: 3rem; text-align: center; color: var(--muted); }
+
+        /* ── BLOG TAB ─────────────────────────────────────── */
+        .blog-editor { display: none; }
+        .blog-editor.visible { display: block; }
+        .blog-form {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 14px; padding: 1.75rem; margin-bottom: 2rem;
+        }
+        .blog-form h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 1.25rem; }
+        .lang-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        .lang-tab {
+            padding: 0.4rem 0.85rem; background: transparent;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 6px; color: var(--muted);
+            font-size: 0.82rem; cursor: pointer; transition: all 0.2s;
+        }
+        .lang-tab.active { background: var(--blue-dim); color: #93c5fd; border-color: rgba(59,130,246,0.3); }
+        .lang-fields { display: none; }
+        .lang-fields.active { display: block; }
+        .blog-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+        .btn-secondary {
+            padding: 0.65rem 1.2rem; background: transparent;
+            border: 1px solid rgba(255,255,255,0.08); color: var(--muted);
+            border-radius: 8px; font-size: 0.88rem; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-secondary:hover { color: var(--text); border-color: rgba(255,255,255,0.15); }
+
+        /* Blog post cards */
+        .blog-post-card {
+            background: var(--surface); border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 12px; padding: 1.25rem;
+            display: flex; justify-content: space-between; align-items: flex-start;
+            gap: 1rem; margin-bottom: 0.75rem;
+            transition: border-color 0.2s;
+        }
+        .blog-post-card:hover { border-color: rgba(59,130,246,0.2); }
+        .blog-post-card .post-info strong { display: block; font-size: 1rem; margin-bottom: 0.25rem; }
+        .blog-post-card .post-info span { font-size: 0.8rem; color: var(--muted); }
+        .post-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+        .btn-edit {
+            padding: 0.4rem 0.85rem; background: var(--blue-dim);
+            border: 1px solid rgba(59,130,246,0.25); color: #93c5fd;
+            border-radius: 6px; font-size: 0.8rem; cursor: pointer; transition: background 0.2s;
+        }
+        .btn-edit:hover { background: rgba(59,130,246,0.25); }
+
+        /* Toast */
+        #toast {
+            position: fixed; bottom: 2rem; right: 2rem;
+            padding: 0.85rem 1.4rem;
+            background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 10px; font-size: 0.88rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            transform: translateY(120%); transition: transform 0.35s cubic-bezier(.25,1,.5,1);
+            z-index: 9000; display: flex; align-items: center; gap: 0.6rem;
+        }
+        #toast.show { transform: translateY(0); }
+        #toast.success { border-color: rgba(34,197,94,0.3); }
+        #toast.error { border-color: rgba(239,68,68,0.3); }
+
+        /* Spinner */
+        .spinner {
+            width: 18px; height: 18px;
+            border: 2px solid rgba(255,255,255,0.15);
+            border-top-color: #fff; border-radius: 50%;
+            animation: spin 0.7s linear infinite; display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Category badge */
+        .cat-badge {
+            display: inline-block; padding: 0.2rem 0.55rem;
+            background: rgba(59,130,246,0.12);
+            border: 1px solid rgba(59,130,246,0.2);
+            border-radius: 999px; font-size: 0.72rem; color: #93c5fd;
+            margin-top: 0.3rem;
+        }
+
+        @media (max-width: 640px) {
+            .topbar { padding: 1rem; }
+            .tabs { padding: 1rem 1rem 0; gap: 0.35rem; }
+            .tab-btn { padding: 0.5rem 0.85rem; font-size: 0.8rem; }
+            .tab-panel { padding: 1.2rem 1rem; }
+            .meta-grid { grid-template-columns: 1fr; }
+            #photosGrid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+        }
+        .watermark-group {
+          margin-top: 1rem;
+        }
+
+        .watermark-toggle-row {
+          margin-bottom: 0.85rem;
+        }
+
+        .checkline {
+          display: flex;
+          align-items: center;
+          gap: 0.65rem;
+          color: rgba(255,255,255,0.82);
+          font-size: 0.95rem;
+        }
+
+        .watermark-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.85rem;
+        }
+
+        .meta-sublabel {
+          display: block;
+          margin-bottom: 0.4rem;
+          font-size: 0.78rem;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.46);
+        }
+
+        @media (max-width: 700px) {
+          .watermark-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+        .watermark-editor {
+          display: none;
+          margin-top: 18px;
+        }
+
+        .watermark-editor.visible {
+          display: block;
+        }
+
+        .watermark-stage {
+          position: relative;
+          width: 100%;
+          max-width: 720px;
+          background: #111;
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 14px;
+          overflow: hidden;
+        }
+
+        .watermark-preview-image {
+          display: block;
+          width: 100%;
+          height: auto;
+        }
+
+        .watermark-overlay-box {
+          position: absolute;
+          top: 24px;
+          left: 24px;
+          width: 160px;
+          z-index: 5;
+          user-select: none;
+          touch-action: none;
+        }
+
+        .watermark-overlay {
+          display: block;
+          width: 100%;
+          height: auto;
+          opacity: 0.5;
+          cursor: grab;
+          user-select: none;
+          -webkit-user-drag: none;
+        }
+
+        .watermark-overlay.dragging {
+          cursor: grabbing;
+        }
+
+        .watermark-resize-handle {
+          position: absolute;
+          right: -10px;
+          bottom: -10px;
+          width: 22px;
+          height: 22px;
+          border: none;
+          border-radius: 999px;
+          background: #fff;
+          box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+          cursor: nwse-resize;
+          padding: 0;
+          z-index: 6;
+        }
+
+        .watermark-resize-handle::before {
+          content: "";
+          position: absolute;
+          inset: 6px;
+          border-right: 2px solid #111;
+          border-bottom: 2px solid #111;
+        }
+</style>
+<body>
+
+<!-- ══ LOGIN SCREEN ══════════════════════════════════════════ -->
+<div id="loginScreen">
+    <div class="login-box">
+        <div class="login-logo">GERI VISUALS</div>
+        <h2>Admin Access</h2>
+        <p>Restricted area. Authorized personnel only.</p>
+
+        <div class="field">
+            <label>EMAIL</label>
+            <input type="email" id="loginEmail" placeholder="admin@example.com" autocomplete="username">
+        </div>
+        <div class="field">
+            <label>PASSWORD</label>
+            <input type="password" id="loginPassword" placeholder="••••••••••" autocomplete="current-password">
+        </div>
+
+        <button class="btn-primary" id="loginBtn" onclick="doLogin()">
+            Sign In
+        </button>
+
+        <div id="loginError"></div>
+        <div class="cooldown-bar" id="cooldownBar">
+            <div class="cooldown-fill" id="cooldownFill"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ ADMIN SHELL ════════════════════════════════════════════ -->
+<div id="adminShell">
+
+    <div class="topbar">
+        <div class="topbar-logo">GERI VISUALS</div>
+        <div class="topbar-right">
+            <span class="badge-admin"><i class="fas fa-shield-alt" style="margin-right:5px;font-size:0.7rem;"></i>Admin</span>
+            <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="photos" onclick="switchTab('photos', this)">
+            <i class="fas fa-images" style="margin-right:7px;"></i>Photos
+        </button>
+        <button class="tab-btn" data-tab="blog" onclick="switchTab('blog', this)">
+            <i class="fas fa-pen-nib" style="margin-right:7px;"></i>Blog
+        </button>
+    </div>
+
+    <!-- ── PHOTOS TAB ──────────────────────────────────────── -->
+    <div class="tab-panel active" id="tab-photos">
+        <div class="panel-header">
+            <h2>Photo Library</h2>
+            <button class="btn-action" onclick="document.getElementById('fileInput').click()">
+                <i class="fas fa-upload"></i> Upload Photos
+            </button>
+        </div>
+
+        <input type="file" id="fileInput" multiple accept="image/*" onchange="onFilesSelected(this.files)">
+
+        <div class="upload-zone" id="dropZone"
+             onclick="document.getElementById('fileInput').click()"
+             ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p><strong>Click to browse</strong> or drag &amp; drop photos here</p>
+            <p style="margin-top:0.3rem;font-size:0.8rem;">JPG, PNG, WEBP — up to 10 files at once</p>
+        </div>
+
+        <!-- Preview strip -->
+        <div id="previewStrip"></div>
+
+        <div id="watermarkEditor" class="watermark-editor">
+          <div class="watermark-editor-head">
+            <div>
+              <h3>Watermark Preview</h3>
+              <p>Click a thumbnail, drag the watermark, or resize it from the corner.</p>
+            </div>
+          </div>
+      
+          <div id="watermarkStage" class="watermark-stage">
+            <img id="watermarkPreviewImage" class="watermark-preview-image" alt="Selected preview">
+        
+            <div id="watermarkOverlayBox" class="watermark-overlay-box">
+              <img id="watermarkOverlay" class="watermark-overlay" src="./watermark.png" alt="Watermark preview">
+              <button type="button" id="watermarkResizeHandle" class="watermark-resize-handle" aria-label="Resize watermark"></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shared metadata for batch -->
+        <div class="upload-meta" id="uploadMeta">
+            <div class="meta-grid">
+                <div class="form-group">
+                    <label>TITLE (applies to all if multiple)</label>
+                    <input type="text" id="metaTitle" placeholder="e.g. Ferrari F40 Legacy">
+                </div>
+                <div class="form-group">
+                    <label>LOCATION</label>
+                    <input type="text" id="metaLocation" placeholder="e.g. Modena, Italy">
+                </div>
+                <div class="form-group">
+                    <label>CATEGORY</label>
+                    <select id="metaCategory">
+                        <option value="cars">🏎️ Cars & Machines</option>
+                        <option value="portraits">📷 Portraits</option>
+                        <option value="urban">🌆 Urban / Streets</option>
+                        <option value="nature">🌿 Nature & Landscapes</option>
+                        <option value="other">📁 Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>TAG / LABEL</label>
+                    <input type="text" id="metaTag" placeholder="e.g. Automotive (LEAVE BLANK FOR CATEGORY)">
+                </div>                
+            </div>
+
+            <div class="meta-group watermark-group">
+              <label class="meta-label">Watermark</label>
+            
+              <div class="watermark-toggle-row">
+                <label class="checkline">
+                  <input type="checkbox" id="wmEnabled" checked>
+                  <span>Apply watermark</span>
+                </label>
+              </div>
+          
+              <div class="watermark-grid">
+            
+                <div>
+                  <label class="meta-sublabel" for="wmOpacity">Opacity</label>
+                  <input type="range" id="wmOpacity" class="meta-input" min="0.15" max="1" step="0.01" value="0.5">
+                </div>
+            
+
+            
+              </div>
+            </div>
+
+            <div class="upload-progress" id="uploadProgress">
+                <p id="uploadProgressText">Uploading...</p>
+                <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            </div>
+
+            <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+                <button class="btn-action" onclick="doUpload()">
+                    <i class="fas fa-check"></i> Upload &amp; Save
+                </button>
+                <button class="btn-secondary" onclick="cancelUpload()">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Existing photos -->
+        <div id="photosGrid">
+            <div class="photos-empty">
+                <i class="fas fa-spinner fa-spin" style="font-size:1.5rem;color:var(--blue);margin-bottom:0.75rem;display:block;"></i>
+                Loading photos...
+            </div>
+        </div>
+    </div>
+
+    <!-- ── BLOG TAB ────────────────────────────────────────── -->
+    <div class="tab-panel" id="tab-blog">
+        <div class="panel-header">
+            <h2>Blog Posts</h2>
+            <button class="btn-action" onclick="openBlogEditor(null)">
+                <i class="fas fa-plus"></i> New Post
+            </button>
+        </div>
+
+        <!-- Editor form (hidden until opened) -->
+        <div class="blog-editor blog-form" id="blogEditor">
+            <h3 id="editorTitle">New Post</h3>
+        
+            <div class="form-group" style="margin-bottom:0.75rem;">
+                <label>TITLE</label>
+                <input type="text" id="titleEn" placeholder="Post title">
+            </div>
+        
+            <div class="form-group" style="margin-bottom:0.75rem;">
+                <label>DATE</label>
+                <input type="date" id="postDate">
+                <small style="color:var(--muted);font-size:0.78rem;">Leave blank to use today.</small>
+            </div>
+        
+            <div class="form-group">
+                <label>TEXT</label>
+                <textarea id="bodyEn" rows="12" placeholder="Write the post text here."></textarea>
+            </div>
+        
+            <input type="hidden" id="editingPostId">
+        
+            <div class="blog-actions" style="margin-top:1.25rem;">
+                <button class="btn-action" onclick="saveBlogPost()">
+                    <i class="fas fa-save"></i> Save Post
+                </button>
+                <button class="btn-secondary" onclick="closeBlogEditor()">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Existing posts list -->
+        <div id="blogList">
+            <div class="photos-empty">
+                <i class="fas fa-spinner fa-spin" style="font-size:1.5rem;color:var(--blue);margin-bottom:0.75rem;display:block;"></i>
+                Loading posts...
+            </div>
+        </div>
+    </div>
+
+</div><!-- /adminShell -->
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script src="admin.js"></script>
+</body>
+</html>
+
